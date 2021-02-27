@@ -11,7 +11,17 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CompteRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ *      normalizationContext = {"groups"={"compte:read"}},
+ *      collectionOperations={
+ *          "get",
+ *          "post",
+ *      },
+ *      itemOperations={
+ *          "get",
+ *          "delete"
+ *      },
+ * )
  */
 class Compte
 {
@@ -25,18 +35,26 @@ class Compte
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"compte:read", "compte:whrite"})
      */
     private $numCompte;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"compte:read"})
      */
     private $solde = 700000;
 
     /**
      * @ORM\OneToMany(targetEntity=Depot::class, mappedBy="compte", cascade = "persist")
+     * @Groups({"compte:whrite"})
      */
     private $depots;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $blocage = false;
 
     public function __construct()
     {
@@ -101,4 +119,17 @@ class Compte
 
         return $this;
     }
+
+    public function getBlocage(): ?bool
+    {
+        return $this->blocage;
+    }
+
+    public function setBlocage(bool $blocage): self
+    {
+        $this->blocage = $blocage;
+
+        return $this;
+    }
+
 }

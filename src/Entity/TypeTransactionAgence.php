@@ -26,18 +26,19 @@ class TypeTransactionAgence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $type;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="typeTransactionAgences", cascade = "persist")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:read", "trans:whrite"})
      */
     private $user;
 
@@ -49,7 +50,7 @@ class TypeTransactionAgence
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"user:read"})
+     * @Groups({"user:read", "trans:read"})
      */
     private $part;
 

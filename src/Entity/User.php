@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -34,6 +35,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *          }
  *     }
  * )
+ * @UniqueEntity(
+ *      "phone",
+ *      message="Ce numero de telephone est deja utiliser dans cette apllication"
+ * )
  */
 class User implements UserInterface
 {
@@ -41,15 +46,9 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "compte:whrite", "trans:whrite"})
      */
     private $id;
-
-    /**
-     * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"user:read"})
-     */
-    private $email;
 
     /**
      * @ORM\Column(type="json")
@@ -59,26 +58,31 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Groups({"compte:whrite"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"compte:whrite"})
      */
     private $Prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"compte:whrite"})
      */
     private $Nom;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
+     * @Groups({"compte:whrite"})
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"compte:whrite"})
      */
     private $CNI;
 
@@ -89,6 +93,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"compte:whrite"})
      */
     private $Adresse;
 
@@ -99,6 +104,7 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Profil::class, inversedBy="users", cascade = "persist")
+     * @Groups({"compte:whrite"})
      */
     private $profil;
 
@@ -109,7 +115,8 @@ class User implements UserInterface
     private $depots;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="user")
+     * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="user", cascade = "persist")
+     * @Groups({"trans:read"})
      */
     private $agence;
 
@@ -119,6 +126,8 @@ class User implements UserInterface
      */
     private $typeTransactionAgences;
 
+
+    
     public function __construct()
     {
         $this->depots = new ArrayCollection();
@@ -130,18 +139,6 @@ class User implements UserInterface
         return $this->id;
     }
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
     /**
      * A visual identifier that represents this user.
      *
@@ -149,7 +146,7 @@ class User implements UserInterface
      */
     public function getUsername(): string
     {
-        return (string) $this->email;
+        return (string) $this->phone;
     }
 
     /**

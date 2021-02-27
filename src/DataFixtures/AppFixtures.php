@@ -25,10 +25,10 @@ class AppFixtures extends Fixture
             $p = new Profil();
             $p->setLibelle($key);
             for ($i=0; $i < 2 ; $i++) { 
-                $user = new User();
+                $user = new User($this->encoder);
                 $user -> setNom($faker->lastName)
                       -> setPrenom($faker->firstName())
-                      -> setEmail($faker->email)
+                    //   -> setEmail($faker->email)
                       -> setPassword($this->encoder->encodePassword ($user, 'password' ))
                       -> setPhone($faker->phoneNumber)
                       -> setCNI(11111111111111)

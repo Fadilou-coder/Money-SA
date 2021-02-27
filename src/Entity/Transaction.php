@@ -11,7 +11,19 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=TransactionRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ *      normalizationContext = {"groups"={"trans:read"}},
+ *      denormalizationContext = {"groups"={"trans:whrite"}},
+ *      collectionOperations={
+ *          "get",
+ *          "post",
+ *      },
+ *      itemOperations={
+ *          "get",
+ *          "put",
+ *          "delete"
+ *      },
+ * )
  */
 class Transaction
 {
@@ -19,18 +31,18 @@ class Transaction
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $montant;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="date", nullable=true)
      */
     private $dateDepot;
 
@@ -52,6 +64,7 @@ class Transaction
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"trans:read"})
      */
     private $fraisEtat;
 
@@ -61,29 +74,30 @@ class Transaction
     private $fraisSystem;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $fraisEvoie;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $fraisRetrait;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $codeTransaction;
 
     /**
      * @ORM\OneToMany(targetEntity=TypeTransactionAgence::class, mappedBy="transaction", cascade = "persist")
+     * @Groups({"trans:read", "trans:whrite"})
      */
     private $typeTransactionAgences;
 
     /**
      * @ORM\OneToMany(targetEntity=TypeTransaction::class, mappedBy="transaction", cascade = "persist")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $typeTransactions;
 

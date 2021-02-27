@@ -45,7 +45,7 @@ class Depot
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="depots", cascade = "persist")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "compte:whrite"})
      */
     private $user;
 
@@ -54,6 +54,11 @@ class Depot
      * @Groups({"depot:white"})
      */
     private $compte;
+
+    public function __construct(){
+        $this->dateDepot = new \DateTime();
+        $this->montant = 700000;
+    }
 
 
     public function getId(): ?int

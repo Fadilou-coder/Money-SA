@@ -7,6 +7,8 @@ use App\Entity\Compte;
 use App\Entity\TypeTransactionAgence;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 final class TypeTransactionAgenceDataPersister implements ContextAwareDataPersisterInterface
 {
@@ -24,10 +26,9 @@ final class TypeTransactionAgenceDataPersister implements ContextAwareDataPersis
 
     public function persist($data, array $context = [])
     {
-      $compte = $data->getUser()->getAgence()->getCompte();
-      $transaction = $data->getTransaction();
-      $montant = $transaction->getMontant();
-      if ($data->getType() === "Depot") {
+        $compte = $data->getUser()->getAgence()->getCompte();
+        $transaction = $data->getTransaction();
+        $montant = $transaction->getMontant();
         $TTC = 0;
         if ($montant > 2000000) {
             $TTC = $montant*0.02;
@@ -70,15 +71,28 @@ final class TypeTransactionAgenceDataPersister implements ContextAwareDataPersis
                 $TTC = 425;
             }
         }
+      if ($data->getType() === "Depot") {
+        if ($compte->getSolde() < ($montant + $TTC)) {
+            return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
+        }
         $transaction->setTTC($TTC);
         $transaction->setFraisEtat(floor($TTC*0.4));
         $transaction->setFraisEvoie(floor($TTC*0.1));
-        $transaction->setFraisRetrait(floor($TTC*0.2));
         $transaction->setFraisSystem(floor($TTC*0.3));
+        $transaction->setFraisRetrait(floor($TTC*0.2));
         $transaction->setDateDepot(new DateTime());
         $compte->setSolde(($compte->getSolde() - $montant - $TTC + $transaction->getFraisEvoie()));
         $data->setPart($transaction->getFraisEvoie());
       }else {
+        if ($transaction->getDateRetrait()) {
+            return new JsonResponse('Argent Deja retirer', Response::HTTP_BAD_REQUEST,[],'true');
+        }
+        if ($transaction->getDateAnnulation()) {
+            return new JsonResponse('Transaction annuler', Response::HTTP_BAD_REQUEST,[],'true');
+        }
+        if ($compte->getSolde() < 5000) {
+            return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
+        }
         $compte->setSolde(($compte->getSolde() + $montant + $transaction->getFraisRetrait()));
         $transaction->setDateRetrait(new DateTime());
         $data->setPart($transaction->getFraisRetrait());

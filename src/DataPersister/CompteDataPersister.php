@@ -4,38 +4,34 @@ namespace App\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
-use App\Entity\Profil;
+use App\Entity\Compte;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class ProfilDataPersister implements ContextAwareDataPersisterInterface
+final class CompteDataPersister implements ContextAwareDataPersisterInterface
 {
 
     private $menager;
-    private $decorated;
-    public function  __construct(EntityManagerInterface $menager, DataPersisterInterface $decorated)
+    public function  __construct(EntityManagerInterface $menager)
     {
         $this->menager = $menager;
-        $this->decorated = $decorated;
     }
 
     public function supports($data, array $context = []): bool
     {
-        return $data instanceof Profil;
+        return $data instanceof Compte;
     }
 
     public function persist($data, array $context = [])
     {
-      $this->decorated->persist($data);
+      $this->menager->persist($data);
+      $this->menager->flush();
       return $data;
     }
 
     public function remove($data, array $context = [])
     {
-      $data->setBlocage(true);
-      foreach($data->getUsers() as $user){
-        $user->setBlocage(true);
-      }
-      $this->menager->flush();
-      return $data;
+        $data->setBlocage(true);
+        $this->menager->flush();
+        return $data;
     }
 }

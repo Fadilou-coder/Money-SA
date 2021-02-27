@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20210223224723 extends AbstractMigration
+final class Version20210225191019 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -20,12 +20,11 @@ final class Version20210223224723 extends AbstractMigration
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE user CHANGE avatar avatar LONGBLOB DEFAULT NULL');
     }
 
     public function down(Schema $schema) : void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE user CHANGE avatar avatar LONGBLOB NOT NULL');
+        $this->addSql('DROP INDEX UNIQ_8D93D6497AC033BE ON user');
     }
 }

@@ -8,10 +8,26 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=AgenceRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ *      denormalizationContext = {"groups"={"compte:whrite"}},
+ *      collectionOperations={
+ *          "get",
+ *          "post",
+ *      },
+ *      itemOperations={
+ *          "get",
+ *          "delete"
+ *      },
+ * )
+ * @UniqueEntity(
+ *      "nom",
+ *      message="Ce nom d'agence est deja utiliser dans cette apllication"
+ * )
  */
 class Agence
 {
@@ -19,34 +35,39 @@ class Agence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"trans:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"trans:read", "compte:whrite"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"compte:whrite"})
      */
     private $adress;
 
     /**
-     * @ORM\Column(type="boolean")
-     */
-    private $status;
-
-    /**
-     * @ORM\OneToMany(targetEntity=User::class, mappedBy="agence")
+     * @ORM\OneToMany(targetEntity=User::class, mappedBy="agence", cascade = "persist")
      * @ApiSubresource()
+     * @Groups({"compte:whrite"})
      */
     private $user;
 
     /**
      * @ORM\OneToOne(targetEntity=Compte::class, cascade={"persist", "remove"})
+     * @Groups({"compte:whrite"})
      */
     private $compte;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $blocage = false;
 
     public function __construct()
     {
@@ -78,18 +99,6 @@ class Agence
     public function setAdress(string $adress): self
     {
         $this->adress = $adress;
-
-        return $this;
-    }
-
-    public function getStatus(): ?bool
-    {
-        return $this->status;
-    }
-
-    public function setStatus(bool $status): self
-    {
-        $this->status = $status;
 
         return $this;
     }
@@ -132,6 +141,18 @@ class Agence
     public function setCompte(?Compte $compte): self
     {
         $this->compte = $compte;
+
+        return $this;
+    }
+
+    public function getBlocage(): ?bool
+    {
+        return $this->blocage;
+    }
+
+    public function setBlocage(bool $blocage): self
+    {
+        $this->blocage = $blocage;
 
         return $this;
     }

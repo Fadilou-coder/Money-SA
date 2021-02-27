@@ -19,25 +19,25 @@ class Client
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $nomComplet;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "trans:whrite"})
      */
     private $CNI;
 
