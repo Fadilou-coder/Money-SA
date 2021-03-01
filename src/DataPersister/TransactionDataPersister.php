@@ -25,23 +25,10 @@ final class TransactionDataPersister implements ContextAwareDataPersisterInterfa
 
     public function persist($data, array $context = [])
     {
-        dd($data); 
-        $compte = $data->getTypeTransactionAgences()[1]->getUser()->getAgence()->getCompte();
-        $montant = $data->getMontant();
         if ($data->getDateRetrait()) {
             return new JsonResponse('Argent Deja retirer', Response::HTTP_BAD_REQUEST,[],'true');
         }
-        if ($data->getDateAnnulation()) {
-            return new JsonResponse('Transaction annuler', Response::HTTP_BAD_REQUEST,[],'true');
-        }
-        if ($compte->getSolde() < 5000) {
-            return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
-                }
-                $compte->setSolde(($compte->getSolde() + $montant + $data->getFraisRetrait()));
-                $data->setDateRetrait(new DateTime());
-                $data->getTypeTransactionAgences()[1]->setPart($data->getFraisRetrait());
-      $this->menager->flush();
-      return $data;
+        $data->setDateAnnulation(new DateTime());
     }
 
     public function remove($data, array $context = [])
