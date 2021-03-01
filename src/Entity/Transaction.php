@@ -16,12 +16,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      denormalizationContext = {"groups"={"trans:whrite"}},
  *      collectionOperations={
  *          "get",
- *          "post",
+ *          "post":{"route_name":"faire_transaction"},
  *      },
  *      itemOperations={
  *          "get",
  *          "put",
- *          "delete"
+ *          "retrait":{
+ *              "route_name":"faire_retrait",
+ *              "path":"/retrait/{id}"
+ *          }
  *      },
  * )
  */
@@ -37,7 +40,7 @@ class Transaction
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "trans:whrite"})
+     * @Groups({"depot:white", "trans:whrite", "tr:read"})
      */
     private $montant;
 
@@ -75,11 +78,13 @@ class Transaction
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"trans:read"})
      */
     private $fraisEvoie;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"trans:read"})
      */
     private $fraisRetrait;
 
@@ -90,22 +95,28 @@ class Transaction
     private $codeTransaction;
 
     /**
-     * @ORM\OneToMany(targetEntity=TypeTransactionAgence::class, mappedBy="transaction", cascade = "persist")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transaction")
      * @Groups({"trans:read", "trans:whrite"})
      */
-    private $typeTransactionAgences;
+    private $user_depot;
 
     /**
-     * @ORM\OneToMany(targetEntity=TypeTransaction::class, mappedBy="transaction", cascade = "persist")
-     * @Groups({"depot:white", "trans:whrite"})
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transactions")
+     * @Groups({"trans:read"})
      */
-    private $typeTransactions;
+    private $user_retrait;
 
-    public function __construct()
-    {
-        $this->typeTransactions = new ArrayCollection();
-        $this->typeTransactionAgences = new ArrayCollection();
-    }
+    /**
+     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="transactions", cascade = "persist")
+     * @Groups({"trans:read"})
+     */
+    private $client_retrait;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="trans", cascade = "persist")
+     * @Groups({"trans:read"})
+     */
+    private $client_envoie;
 
 
     public function getId(): ?int
@@ -233,62 +244,50 @@ class Transaction
         return $this;
     }
 
-    /**
-     * @return Collection|TypeTransactionAgence[]
-     */
-    public function getTypeTransactionAgences(): Collection
+    public function getUserDepot(): ?User
     {
-        return $this->typeTransactionAgences;
+        return $this->user_depot;
     }
 
-    public function addTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
+    public function setUserDepot(?User $user_depot): self
     {
-        if (!$this->typeTransactionAgences->contains($typeTransactionAgence)) {
-            $this->typeTransactionAgences[] = $typeTransactionAgence;
-            $typeTransactionAgence->setTransaction($this);
-        }
+        $this->user_depot = $user_depot;
 
         return $this;
     }
 
-    public function removeTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
+    public function getUserRetrait(): ?User
     {
-        if ($this->typeTransactionAgences->removeElement($typeTransactionAgence)) {
-            // set the owning side to null (unless already changed)
-            if ($typeTransactionAgence->getTransaction() === $this) {
-                $typeTransactionAgence->setTransaction(null);
-            }
-        }
+        return $this->user_retrait;
+    }
+
+    public function setUserRetrait(?User $user_retrait): self
+    {
+        $this->user_retrait = $user_retrait;
 
         return $this;
     }
 
-    /**
-     * @return Collection|TypeTransaction[]
-     */
-    public function getTypeTransactions(): Collection
+    public function getClientRetrait(): ?Client
     {
-        return $this->typeTransactions;
+        return $this->client_retrait;
     }
 
-    public function addTypeTransaction(TypeTransaction $typeTransaction): self
+    public function setClientRetrait(?Client $client_retrait): self
     {
-        if (!$this->typeTransactions->contains($typeTransaction)) {
-            $this->typeTransactions[] = $typeTransaction;
-            $typeTransaction->setTransaction($this);
-        }
+        $this->client_retrait = $client_retrait;
 
         return $this;
     }
 
-    public function removeTypeTransaction(TypeTransaction $typeTransaction): self
+    public function getClientEnvoie(): ?Client
     {
-        if ($this->typeTransactions->removeElement($typeTransaction)) {
-            // set the owning side to null (unless already changed)
-            if ($typeTransaction->getTransaction() === $this) {
-                $typeTransaction->setTransaction(null);
-            }
-        }
+        return $this->client_envoie;
+    }
+
+    public function setClientEnvoie(?Client $client_envoie): self
+    {
+        $this->client_envoie = $client_envoie;
 
         return $this;
     }

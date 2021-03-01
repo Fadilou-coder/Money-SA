@@ -42,19 +42,26 @@ class Client
     private $CNI;
 
     /**
-     * @ORM\OneToMany(targetEntity=TypeTransaction::class, mappedBy="client", cascade = "persist")
-     */
-    private $typeTransactions;
-
-    /**
      * @ORM\Column(type="boolean")
      * @Groups({"depot:white"})
      */
     private $blocage = false;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="client_retrait")
+     */
+    private $transactions;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="client_envoie")
+     */
+    private $trans;
+
     public function __construct()
     {
         $this->typeTransactions = new ArrayCollection();
+        $this->transactions = new ArrayCollection();
+        $this->trans = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -98,36 +105,6 @@ class Client
         return $this;
     }
 
-    /**
-     * @return Collection|TypeTransaction[]
-     */
-    public function getTypeTransactions(): Collection
-    {
-        return $this->typeTransactions;
-    }
-
-    public function addTypeTransaction(TypeTransaction $typeTransaction): self
-    {
-        if (!$this->typeTransactions->contains($typeTransaction)) {
-            $this->typeTransactions[] = $typeTransaction;
-            $typeTransaction->setClient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTypeTransaction(TypeTransaction $typeTransaction): self
-    {
-        if ($this->typeTransactions->removeElement($typeTransaction)) {
-            // set the owning side to null (unless already changed)
-            if ($typeTransaction->getClient() === $this) {
-                $typeTransaction->setClient(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getBlocage(): ?bool
     {
         return $this->blocage;
@@ -136,6 +113,66 @@ class Client
     public function setBlocage(bool $blocage): self
     {
         $this->blocage = $blocage;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransactions(): Collection
+    {
+        return $this->transactions;
+    }
+
+    public function addTransaction(Transaction $transaction): self
+    {
+        if (!$this->transactions->contains($transaction)) {
+            $this->transactions[] = $transaction;
+            $transaction->setClientRetrait($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): self
+    {
+        if ($this->transactions->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getClientRetrait() === $this) {
+                $transaction->setClientRetrait(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTrans(): Collection
+    {
+        return $this->trans;
+    }
+
+    public function addTran(Transaction $tran): self
+    {
+        if (!$this->trans->contains($tran)) {
+            $this->trans[] = $tran;
+            $tran->setClientEnvoie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTran(Transaction $tran): self
+    {
+        if ($this->trans->removeElement($tran)) {
+            // set the owning side to null (unless already changed)
+            if ($tran->getClientEnvoie() === $this) {
+                $tran->setClientEnvoie(null);
+            }
+        }
 
         return $this;
     }
