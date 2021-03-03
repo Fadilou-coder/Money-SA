@@ -8,3 +8,5 @@ api_platform:
     collection:
         pagination:
             items_per_page: 10
+    exception_to_status:
+        App\Exception\DepotException: 400

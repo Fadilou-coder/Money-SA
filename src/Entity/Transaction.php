@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=TransactionRepository::class)
@@ -16,14 +17,31 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      denormalizationContext = {"groups"={"trans:whrite"}},
  *      collectionOperations={
  *          "get",
- *          "post":{"route_name":"faire_transaction"},
+ *          "get_by_code":{
+ *              "route_name":"get_transaction_by_code"
+ *          },
+ *          "post":{
+ *              "route_name":"faire_transaction",
+ *              "access_control"="(is_granted('ROLE_ADMINAGENCE') or is_granted('ROLE_USERAGENCE'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          },
  *      },
  *      itemOperations={
  *          "get",
- *          "put",
+ *          "put":{
+ *              "access_control"="(is_granted('ROLE_ADMINAGENCE') or is_granted('ROLE_USERAGENCE'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          },
+ *          "annuler_transaction":{
+ *              "method":"put",
+ *              "route_name":"annuler_transaction",
+ *          },
  *          "retrait":{
+ *              "method":"put",
  *              "route_name":"faire_retrait",
- *              "path":"/retrait/{id}"
+ *              "path":"/retrait",
+ *              "access_control"="(is_granted('ROLE_ADMINAGENCE') or is_granted('ROLE_USERAGENCE'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
  *          }
  *      },
  * )
@@ -41,6 +59,7 @@ class Transaction
     /**
      * @ORM\Column(type="integer")
      * @Groups({"depot:white", "trans:whrite", "tr:read"})
+     * @Assert\Positive(message="Le Montant doit etre Positif")
      */
     private $montant;
 

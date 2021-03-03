@@ -41,9 +41,9 @@ class Compte
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"compte:read"})
+     * @Groups({"compte:read", "compte:whrite"})
      */
-    private $solde = 700000;
+    private $solde;
 
     /**
      * @ORM\OneToMany(targetEntity=Depot::class, mappedBy="compte", cascade = "persist")

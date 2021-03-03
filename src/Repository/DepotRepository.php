@@ -22,19 +22,18 @@ class DepotRepository extends ServiceEntityRepository
     // /**
     //  * @return Depot[] Returns an array of Depot objects
     //  */
-    /*
-    public function findByExampleField($value)
+    public function findByUser($value)
     {
         return $this->createQueryBuilder('d')
-            ->andWhere('d.exampleField = :val')
+            ->innerJoin('d.user', 'u')
+            ->andWhere('u.id = :val')
             ->setParameter('val', $value)
-            ->orderBy('d.id', 'ASC')
-            ->setMaxResults(10)
+            ->orderBy('d.id', 'DESc')
             ->getQuery()
-            ->getResult()
+            ->getOneOrNullResult()
         ;
     }
-    */
+    
 
     /*
     public function findOneBySomeField($value): ?Depot

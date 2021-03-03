@@ -2,21 +2,22 @@
 
 namespace App\DataPersister;
 
-use ApiPlatform\Core\DataPersister\DataPersisterInterface;
+
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use App\Entity\Compte;
 use App\Entity\Depot;
+use App\Exception\DepotException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
-final class DepotDataPersister implements ContextAwareDataPersisterInterface
+final class DepotDataPersister implements ContextAwareDataPersisterInterface 
 {
 
     private $menager;
-    private $decorated;
-    public function  __construct(EntityManagerInterface $menager, DataPersisterInterface $decorated)
+    public function  __construct(EntityManagerInterface $menager)
     {
         $this->menager = $menager;
-        $this->decorated = $decorated;
     }
 
     public function supports($data, array $context = []): bool
@@ -35,6 +36,5 @@ final class DepotDataPersister implements ContextAwareDataPersisterInterface
 
     public function remove($data, array $context = [])
     {
-        return $data;
     }
 }

@@ -8,17 +8,33 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=DepotRepository::class)
  * @ApiResource(
  *      denormalizationContext={"groups"={"depot:white"}},
  *      collectionOperations={
- *          "get",
- *          "post"
+ *          "get":{
+ *              "access_control"="(is_granted('ROLE_ADMINSYS') or is_granted('ROLE_CAISSIER'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          },
+ *          "post":{
+ *              "access_control"="(is_granted('ROLE_ADMINSYS') or is_granted('ROLE_CAISSIER'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          }
  *      },
  *      itemOperations={
- *          "get",
+ *          "get":{
+ *              "access_control"="(is_granted('ROLE_ADMINSYS') or is_granted('ROLE_CAISSIER'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          },
+ *          "annuler_depot":{
+ *              "access_control"="(is_granted('ROLE_CAISSIER'))",
+ *              "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *              "method": "DELETE",
+ *              "route_name":"annuler_depot"
+ *          },
  *      }
  * )
  */
@@ -33,13 +49,13 @@ class Depot
 
     /**
      * @ORM\Column(type="date")
-     * @Groups({"depot:white"})
      */
     private $dateDepot;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "compte:whrite"})
+     * @Assert\Positive(message="Le Montant doit etre Positif")
      */
     private $montant;
 
@@ -57,7 +73,6 @@ class Depot
 
     public function __construct(){
         $this->dateDepot = new \DateTime();
-        $this->montant = 700000;
     }
 
 

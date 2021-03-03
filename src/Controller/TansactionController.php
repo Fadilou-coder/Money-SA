@@ -35,7 +35,15 @@ class TansactionController extends AbstractController
      * )
      */
 
-     public function faire_transaction(SerializerInterface $serializer, Request $request, ValidatorService $validate, EntityManagerInterface $menager){
+     public function faire_depot(SerializerInterface $serializer, Request $request, ValidatorService $validate, EntityManagerInterface $menager){
+            //dd($this->getUser());
+            $a = 0;
+            while ($a == 0) {
+                $code = rand(10000000, 999999999);
+                if (!$menager->getRepository(Transaction::class)->findOneBy(['codeTransaction' => $code])) {
+                    $a = 1;
+                }
+            }
             $tr = $serializer->decode($request->getContent(), 'json');
             $montant = $tr['montant'];
             $TTC = 0;
@@ -80,22 +88,25 @@ class TansactionController extends AbstractController
                     $TTC = 425;
                 }
             }
-            $compte = $menager->getRepository(User::class)->find($tr['userDepot'])->getAgence()->getCompte();
+            $compte = $this->getUser()->getAgence()->getCompte();
             if ($compte->getSolde() < ($montant + $TTC)) {
                 return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
             }
             $transaction = new Transaction();
             $transaction->setMontant($montant);
-            $transaction->setCodeTransaction($tr['codeTransaction']);
+            $transaction->setCodeTransaction($code);
             $transaction->setTTC($TTC);
             $transaction->setFraisEtat(floor($TTC*0.4));
             $transaction->setFraisEvoie(floor($TTC*0.1));
             $transaction->setFraisSystem(floor($TTC*0.3));
             $transaction->setFraisRetrait(floor($TTC*0.2));
-            $transaction->setUserDepot($menager->getRepository(User::class)->find($tr['userDepot']));
+            $transaction->setUserDepot($this->getUser());
             $transaction->setDateDepot(new DateTime());
             //dd($menager->getRepository(Client::class)->findOneBy(['CNI' => $tr['clientEvoie']['CNI']]));
             //dd($menager->getRepository(Client::class)->findOneBy(['nomComplet' => $tr['clientRetrait']['nomComplet'], 'phone' => $tr['clientRetrait']['phone']]));
+            if ($compte->getSolde() < ($montant + $TTC)) {
+                return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
+            }
             if ($menager->getRepository(Client::class)->findOneBy(['CNI' => $tr['clientEvoie']['CNI']])) {
                 $transaction->setClientEnvoie($menager->getRepository(Client::class)->findOneBy(['CNI' => $tr['clientEvoie']['CNI']]));
             }else {
@@ -106,8 +117,8 @@ class TansactionController extends AbstractController
                   ;
                 $transaction->setClientEnvoie($c);
             }
-            if ($menager->getRepository(Client::class)->findOneBy(['CNI' => $tr['clientEvoie']['CNI']])) {
-                $transaction->setClientEnvoie($menager->getRepository(Client::class)->findOneBy(['nomComplet' => $tr['clientRetrait']['nomComplet'], 'phone' => $tr['clientRetrait']['phone']]));
+            if ($menager->getRepository(Client::class)->findOneBy(['nomComplet' => $tr['clientRetrait']['nomComplet'], 'phone' => $tr['clientRetrait']['phone']])) {
+                $transaction->setClientRetrait($menager->getRepository(Client::class)->findOneBy(['nomComplet' => $tr['clientRetrait']['nomComplet'], 'phone' => $tr['clientRetrait']['phone']]));
             }else {
                 $c = new Client();
                 $c->setNomComplet($tr['clientRetrait']['nomComplet'])
@@ -115,8 +126,7 @@ class TansactionController extends AbstractController
                   ;
                 $transaction->setClientRetrait($c);
             }
-            $transaction->getClientEnvoie();
-            $compte->setSolde(($compte->getSolde() - $montant - $TTC + $transaction->getFraisEvoie()));
+            $compte->setSolde(($compte->getSolde() - $montant - $TTC));
             $validate->validate($transaction);
             $menager->persist($transaction);
             $menager->flush();
@@ -126,14 +136,15 @@ class TansactionController extends AbstractController
     /**
      * @Route(
      *  name="faire_retrait",
-     *  path="/api/retrait/{id}",
+     *  path="/api/retrait",
      *  methods={"PUT"},
      * )
      */
 
-    public function faire_retrait(SerializerInterface $serializer, Request $request, EntityManagerInterface $menager, $id){
-        $tr = $menager->getRepository(Transaction::class)->find($id);
-        $user = $menager->getRepository(User::class)->find($serializer->decode($request->getContent(), 'json')['userRetrait']);
+    public function faire_retrait(SerializerInterface $serializer, Request $request, EntityManagerInterface $menager){
+        $body = $serializer->decode($request->getContent(), 'json');
+        $tr = $menager->getRepository(Transaction::class)->findOneBy(['codeTransaction' => $body['code']]);
+        $user = $this->getUser();
         $compte = $user->getAgence()->getCompte();
         $montant = $tr->getMontant();
         if ($tr->getDateRetrait()) {
@@ -148,8 +159,48 @@ class TansactionController extends AbstractController
         $compte->setSolde(($compte->getSolde() + $montant + $tr->getFraisRetrait()));
         $tr->setDateRetrait(new DateTime());
         $tr->setUserRetrait($user);
-        $tr->getClientRetrait()->setCNI($serializer->decode($request->getContent(), 'json')['clientRetrait']['CNI']);
+        $tr->getClientRetrait()->setCNI($body['clientRetrait']['CNI']);
+        $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
       $menager->flush();
       return $this->json("Retrait Effectuer avec success. Code de Transactin: ".$tr->getCodeTransaction(),Response::HTTP_OK);
+    }
+
+    /**
+     * @Route(
+     *  name="annuler_transaction",
+     *  path="/api/transaction/annuler",
+     *  methods={"PUT"},
+     * )
+     */
+
+     public function annuler_transaction(SerializerInterface $serializer, Request $request, EntityManagerInterface $menager){
+        $body = $serializer->decode($request->getContent(), 'json');
+        $tr = $menager->getRepository(Transaction::class)->findOneBy(['codeTransaction' => $body['code']]);
+        if ($tr->getDateRetrait()) {
+            return new JsonResponse('Argent Deja retirer', Response::HTTP_BAD_REQUEST,[],'true');
+        }
+        if ($tr->getDateAnnulation()) {
+            return new JsonResponse('Transaction Deja annuler', Response::HTTP_BAD_REQUEST,[],'true');
+        }
+        $this->getUser()->getAgence()->getCompte()->setSolde($this->getUser()->getAgence()->getCompte()->getSolde() + $tr->getMontant() + $tr->getTTC());
+        $tr->setDateAnnulation(new DateTime());
+        $menager->flush();
+        return new JsonResponse('Transaction Annuler', Response::HTTP_OK,[],'true');
+     }
+
+
+
+     /**
+     * @Route(
+     *  name="get_transaction_by_code",
+     *  path="/api/transaction/code",
+     *  methods={"POST"},
+     * )
+     */
+
+    public function getTransactionByCode(SerializerInterface $serializer, Request $request, EntityManagerInterface $menager){
+        $body = $serializer->decode($request->getContent(), 'json');
+        $tr = $menager->getRepository(Transaction::class)->findOneBy(['codeTransaction' => $body['code']]);
+        return $this->json($tr,Response::HTTP_OK);
     }
 }
