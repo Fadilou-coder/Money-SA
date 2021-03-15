@@ -15,6 +15,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
+ *      normalizationContext = {"groups"={"user:read"}},
  *      collectionOperations={
  *          "get",
  *          "add_user"={
@@ -46,7 +47,7 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "compte:whrite", "trans:whrite", "user:read"})
+     * @Groups({"depot:white", "compte:whrite", "trans:whrite", "user:read", "trans:read"})
      */
     private $id;
 
@@ -64,13 +65,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "trans:read", "user:read"})
      */
     private $Prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "trans:read", "user:read"})
      */
     private $Nom;
 
@@ -88,6 +89,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="blob", nullable=true)
+     * @Groups({"user:whrite", "user:read"})
      */
     private $Avatar;
 
@@ -99,6 +101,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"user:read"})
      */
     private $blocage = false;
 
@@ -116,7 +119,7 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="user", cascade = "persist")
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "user:read"})
      */
     private $agence;
 
@@ -133,6 +136,8 @@ class User implements UserInterface
      * @ApiSubresource()
      */
     private $transaction;
+
+    
 
 
     
@@ -262,7 +267,9 @@ class User implements UserInterface
 
     public function getAvatar()
     {
-        return $this->Avatar;
+        if($this->Avatar){
+            return base64_encode(stream_get_contents($this->Avatar));
+        }
     }
 
     public function setAvatar($Avatar): self

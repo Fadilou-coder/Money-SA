@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -58,23 +59,26 @@ class Transaction
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "trans:whrite", "tr:read"})
+     * @Groups({"depot:white", "trans:whrite", "tr:read", "trans:read"})
      * @Assert\Positive(message="Le Montant doit etre Positif")
      */
     private $montant;
 
     /**
      * @ORM\Column(type="date", nullable=true)
+     * @Groups({"trans:read"})
      */
     private $dateDepot;
 
     /**
      * @ORM\Column(type="date", nullable=true)
+     * @Groups({"trans:read"})
      */
     private $dateRetrait;
 
     /**
      * @ORM\Column(type="date", nullable=true)
+     * @Groups({"trans:read"})
      */
     private $dateAnnulation;
 
@@ -109,7 +113,7 @@ class Transaction
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white", "trans:whrite"})
+     * @Groups({"depot:white", "trans:whrite", "trans:read"})
      */
     private $codeTransaction;
 

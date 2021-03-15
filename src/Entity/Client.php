@@ -25,19 +25,19 @@ class Client
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white", "trans:whrite"})
+     * @Groups({"depot:white", "trans:whrite", "trans:read"})
      */
     private $nomComplet;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "trans:whrite"})
+     * @Groups({"depot:white", "trans:whrite", "trans:read"})
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"depot:white", "trans:whrite"})
+     * @Groups({"depot:white", "trans:whrite", "trans:read"})
      */
     private $CNI;
 

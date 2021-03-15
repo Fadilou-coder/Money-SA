@@ -41,7 +41,7 @@ class Compte
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"compte:read", "compte:whrite"})
+     * @Groups({"compte:read", "compte:whrite", "user:read"})
      */
     private $solde;
 

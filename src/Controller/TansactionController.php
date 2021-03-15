@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Client;
 use App\Entity\Transaction;
+use App\Entity\TypeTransactionAgence;
 use App\Entity\User;
 use App\Service\ValidatorService;
 use DateTime;
@@ -153,14 +154,21 @@ class TansactionController extends AbstractController
         if ($tr->getDateAnnulation()) {
             return new JsonResponse('Transaction annuler', Response::HTTP_BAD_REQUEST,[],'true');
         }
-        if ($compte->getSolde() < 5000) {
+        if ($compte->getSolde() < 5000 || $compte->getSolde() < $montant) {
             return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
         }
         $compte->setSolde(($compte->getSolde() + $montant + $tr->getFraisRetrait()));
         $tr->setDateRetrait(new DateTime());
-        $tr->setUserRetrait($user);
-        $tr->getClientRetrait()->setCNI($body['clientRetrait']['CNI']);
+        $typetr = new TypeTransactionAgence;
+        $typetr->setUser($user)
+                ->setTransaction($tr)
+                ->setPart($tr->getFraisRetrait())
+                ->setType('Depot');
+                ;
+        // $tr->setUserRetrait($user);
+        $tr->getClientRetrait()->setCNI($body['CNI']);
         $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
+        // $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
       $menager->flush();
       return $this->json("Retrait Effectuer avec success. Code de Transactin: ".$tr->getCodeTransaction(),Response::HTTP_OK);
     }
@@ -193,14 +201,13 @@ class TansactionController extends AbstractController
      /**
      * @Route(
      *  name="get_transaction_by_code",
-     *  path="/api/transaction/code",
-     *  methods={"POST"},
+     *  path="/api/transaction/{code}",
+     *  methods={"GET"},
      * )
      */
 
-    public function getTransactionByCode(SerializerInterface $serializer, Request $request, EntityManagerInterface $menager){
-        $body = $serializer->decode($request->getContent(), 'json');
-        $tr = $menager->getRepository(Transaction::class)->findOneBy(['codeTransaction' => $body['code']]);
+    public function getTransactionByCode($code, EntityManagerInterface $menager){
+        $tr = $menager->getRepository(Transaction::class)->findOneBy(['codeTransaction' => $code]);
         return $this->json($tr,Response::HTTP_OK);
     }
 }

@@ -35,7 +35,7 @@ class Agence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "user:read"})
      */
     private $id;
 
@@ -60,7 +60,7 @@ class Agence
 
     /**
      * @ORM\OneToOne(targetEntity=Compte::class, cascade={"persist", "remove"})
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "user:read"})
      */
     private $compte;
 
