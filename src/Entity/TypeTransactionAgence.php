@@ -39,27 +39,33 @@ class TypeTransactionAgence
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white", "trans:whrite", "tr:read"})
+     * @Groups({"depot:white", "trans:whrite", "tr:read", "user:read"})
      */
     private $type;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="typeTransactionAgences", cascade = "persist")
-     * @Groups({"depot:white", "trans:read", "trans:whrite"})
+     * @Groups({"depot:white", "trans:read", "trans:whrite", "tr:read"})
      */
     private $user;
 
     /**
      * @ORM\ManyToOne(targetEntity=Transaction::class, inversedBy="typeTransactionAgences", cascade="persist")
-     * @Groups({"depot:white", "tr:read"})
+     * @Groups({"depot:white", "tr:read", "user:read"})
      */
     private $transaction;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"user:read", "trans:read", "tr:read"})
      */
     private $part;
+
+    /**
+     * @ORM\Column(type="boolean")
+     * @Groups({"user:read", "trans:read", "tr:read"})
+     */
+    private $archiver = false;
 
     public function getId(): ?int
     {
@@ -110,6 +116,18 @@ class TypeTransactionAgence
     public function setPart(string $part): self
     {
         $this->part = $part;
+
+        return $this;
+    }
+
+    public function getArchiver(): ?bool
+    {
+        return $this->archiver;
+    }
+
+    public function setArchiver(bool $archiver): self
+    {
+        $this->archiver = $archiver;
 
         return $this;
     }

@@ -53,81 +53,83 @@ class Transaction
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "trans:whrite"})
+     * @Groups({"depot:white", "trans:whrite", "tr:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "trans:whrite", "tr:read", "trans:read"})
+     * @Groups({"depot:white", "trans:whrite", "tr:read", "trans:read", "user:read"})
      * @Assert\Positive(message="Le Montant doit etre Positif")
      */
     private $montant;
 
     /**
      * @ORM\Column(type="date", nullable=true)
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "tr:read", "user:read"})
      */
     private $dateDepot;
 
     /**
      * @ORM\Column(type="date", nullable=true)
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "tr:read", "user:read"})
      */
     private $dateRetrait;
 
     /**
      * @ORM\Column(type="date", nullable=true)
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "user:read"})
      */
     private $dateAnnulation;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"trans:read", "tr:read", "user:read"})
      * 
      */
     private $TTC;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "user:read"})
      */
     private $fraisEtat;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"trans:read", "user:read"})
      */
     private $fraisSystem;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "tr:read", "user:read"})
      */
     private $fraisEvoie;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"trans:read"})
+     * @Groups({"trans:read", "tr:read", "user:read"})
      */
     private $fraisRetrait;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"depot:white", "trans:whrite", "trans:read"})
+     * @Groups({"depot:white", "trans:whrite", "trans:read", "user:read"})
      */
     private $codeTransaction;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transaction")
-     * @Groups({"trans:read", "trans:whrite"})
-     */
-    private $user_depot;
+    // /**
+    //  * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transaction")
+    //  * @Groups({"trans:read", "trans:whrite"})
+    //  */
+    // private $user_depot;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transactions")
-     * @Groups({"trans:read"})
-     */
-    private $user_retrait;
+    // /**
+    //  * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transactions")
+    //  * @Groups({"trans:read"})
+    //  */
+    // private $user_retrait;
 
     /**
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="transactions", cascade = "persist")
@@ -140,6 +142,17 @@ class Transaction
      * @Groups({"trans:read"})
      */
     private $client_envoie;
+
+    /**
+     * @ORM\OneToMany(targetEntity=TypeTransactionAgence::class, mappedBy="transaction", cascade = "persist")
+     * @Groups({"trans:read", "trans:whrite"})
+     */
+    private $typeTransactionAgences;
+
+    public function __construct()
+    {
+        $this->typeTransactionAgences = new ArrayCollection();
+    }
 
 
     public function getId(): ?int
@@ -267,29 +280,29 @@ class Transaction
         return $this;
     }
 
-    public function getUserDepot(): ?User
-    {
-        return $this->user_depot;
-    }
+    // public function getUserDepot(): ?User
+    // {
+    //     return $this->user_depot;
+    // }
 
-    public function setUserDepot(?User $user_depot): self
-    {
-        $this->user_depot = $user_depot;
+    // public function setUserDepot(?User $user_depot): self
+    // {
+    //     $this->user_depot = $user_depot;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function getUserRetrait(): ?User
-    {
-        return $this->user_retrait;
-    }
+    // public function getUserRetrait(): ?User
+    // {
+    //     return $this->user_retrait;
+    // }
 
-    public function setUserRetrait(?User $user_retrait): self
-    {
-        $this->user_retrait = $user_retrait;
+    // public function setUserRetrait(?User $user_retrait): self
+    // {
+    //     $this->user_retrait = $user_retrait;
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
     public function getClientRetrait(): ?Client
     {
@@ -311,6 +324,36 @@ class Transaction
     public function setClientEnvoie(?Client $client_envoie): self
     {
         $this->client_envoie = $client_envoie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|TypeTransactionAgence[]
+     */
+    public function getTypeTransactionAgences(): Collection
+    {
+        return $this->typeTransactionAgences;
+    }
+
+    public function addTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
+    {
+        if (!$this->typeTransactionAgences->contains($typeTransactionAgence)) {
+            $this->typeTransactionAgences[] = $typeTransactionAgence;
+            $typeTransactionAgence->setTransaction($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
+    {
+        if ($this->typeTransactionAgences->removeElement($typeTransactionAgence)) {
+            // set the owning side to null (unless already changed)
+            if ($typeTransactionAgence->getTransaction() === $this) {
+                $typeTransactionAgence->setTransaction(null);
+            }
+        }
 
         return $this;
     }

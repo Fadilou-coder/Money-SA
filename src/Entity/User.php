@@ -65,13 +65,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite", "trans:read", "user:read"})
+     * @Groups({"compte:whrite", "tr:read", "user:read"})
      */
     private $Prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite", "trans:read", "user:read"})
+     * @Groups({"compte:whrite", "tr:read", "user:read"})
      */
     private $Nom;
 
@@ -123,22 +123,26 @@ class User implements UserInterface
      */
     private $agence;
 
+    // /**
+    //  * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_depot")
+    //  * @Groups({"user:read"})
+    //  * @ApiSubresource()
+    //  */
+    // private $transactions;
+
+    // /**
+    //  * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_depot")
+    //  * @Groups({"user:read"})
+    //  * @ApiSubresource()
+    //  */
+    // private $transaction;
+
     /**
-     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_depot")
+     * @ORM\OneToMany(targetEntity=TypeTransactionAgence::class, mappedBy="user")
      * @Groups({"user:read"})
      * @ApiSubresource()
      */
-    private $transactions;
-
-    /**
-     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_depot")
-     * @Groups({"user:read"})
-     * @ApiSubresource()
-     */
-    private $transaction;
-
-    
-
+    private $typeTransactionAgences;
 
     
     public function __construct()
@@ -357,60 +361,90 @@ class User implements UserInterface
         return $this;
     }
 
+    // /**
+    //   * @return Collection|Transaction[]
+    //  */
+    // public function getTransactions(): Collection
+    // {
+    //     return $this->transactions;
+    // }
+
+    // public function addTransaction(Transaction $transaction): self
+    // {
+    //     if (!$this->transactions->contains($transaction)) {
+    //         $this->transactions[] = $transaction;
+    //         $transaction->setUserDepot($this);
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeTransaction(Transaction $transaction): self
+    // {
+    //     if ($this->transactions->removeElement($transaction)) {
+    //         // set the owning side to null (unless already changed)
+    //         if ($transaction->getUserDepot() === $this) {
+    //             $transaction->setUserDepot(null);
+    //         }
+    //     }
+
+    //     return $this;
+    // }
+
+    // /**
+    //  * @return Collection|Transaction[]
+    //  */
+    // public function getTransaction(): Collection
+    // {
+    //     return $this->transaction;
+    // }
+
+    // public function addTransactions(Transaction $transaction): self
+    // {
+    //     if (!$this->transaction->contains($transaction)) {
+    //         $this->transaction[] = $transaction;
+    //         $transaction->setUserRetrait($this);
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeTransactions(Transaction $transaction): self
+    // {
+    //     if ($this->transaction->removeElement($transaction)) {
+    //         // set the owning side to null (unless already changed)
+    //         if ($transaction->getUserRetrait() === $this) {
+    //             $transaction->setUserRetrait(null);
+    //         }
+    //     }
+
+    //     return $this;
+    // }
+
     /**
-     * @return Collection|Transaction[]
+     * @return Collection|TypeTransactionAgence[]
      */
-    public function getTransactions(): Collection
+    public function getTypeTransactionAgences(): Collection
     {
-        return $this->transactions;
+        return $this->typeTransactionAgences;
     }
 
-    public function addTransaction(Transaction $transaction): self
+    public function addTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
     {
-        if (!$this->transactions->contains($transaction)) {
-            $this->transactions[] = $transaction;
-            $transaction->setUserDepot($this);
+        if (!$this->typeTransactionAgences->contains($typeTransactionAgence)) {
+            $this->typeTransactionAgences[] = $typeTransactionAgence;
+            $typeTransactionAgence->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeTransaction(Transaction $transaction): self
+    public function removeTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
     {
-        if ($this->transactions->removeElement($transaction)) {
+        if ($this->typeTransactionAgences->removeElement($typeTransactionAgence)) {
             // set the owning side to null (unless already changed)
-            if ($transaction->getUserDepot() === $this) {
-                $transaction->setUserDepot(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Transaction[]
-     */
-    public function getTransaction(): Collection
-    {
-        return $this->transaction;
-    }
-
-    public function addTransactions(Transaction $transaction): self
-    {
-        if (!$this->transaction->contains($transaction)) {
-            $this->transaction[] = $transaction;
-            $transaction->setUserRetrait($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTransactions(Transaction $transaction): self
-    {
-        if ($this->transaction->removeElement($transaction)) {
-            // set the owning side to null (unless already changed)
-            if ($transaction->getUserRetrait() === $this) {
-                $transaction->setUserRetrait(null);
+            if ($typeTransactionAgence->getUser() === $this) {
+                $typeTransactionAgence->setUser(null);
             }
         }
 

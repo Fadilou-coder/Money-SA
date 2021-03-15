@@ -101,7 +101,13 @@ class TansactionController extends AbstractController
             $transaction->setFraisEvoie(floor($TTC*0.1));
             $transaction->setFraisSystem(floor($TTC*0.3));
             $transaction->setFraisRetrait(floor($TTC*0.2));
-            $transaction->setUserDepot($this->getUser());
+            $typetr = new TypeTransactionAgence;
+            $typetr->setUser($this->getUser())
+                    ->setTransaction($transaction)
+                    ->setPart($transaction->getFraisEvoie())
+                    ->setType('Depot');
+                    ;
+            //$transaction->setUserDepot($this->getUser());
             $transaction->setDateDepot(new DateTime());
             //dd($menager->getRepository(Client::class)->findOneBy(['CNI' => $tr['clientEvoie']['CNI']]));
             //dd($menager->getRepository(Client::class)->findOneBy(['nomComplet' => $tr['clientRetrait']['nomComplet'], 'phone' => $tr['clientRetrait']['phone']]));
@@ -129,7 +135,7 @@ class TansactionController extends AbstractController
             }
             $compte->setSolde(($compte->getSolde() - $montant - $TTC));
             $validate->validate($transaction);
-            $menager->persist($transaction);
+            $menager->persist($typetr);
             $menager->flush();
             return $this->json($transaction,Response::HTTP_OK);
     }
@@ -163,12 +169,13 @@ class TansactionController extends AbstractController
         $typetr->setUser($user)
                 ->setTransaction($tr)
                 ->setPart($tr->getFraisRetrait())
-                ->setType('Depot');
+                ->setType('Retrait')
                 ;
         // $tr->setUserRetrait($user);
         $tr->getClientRetrait()->setCNI($body['CNI']);
-        $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
+        $tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getCompte()->setSolde($tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
         // $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
+      $menager->persist($typetr);
       $menager->flush();
       return $this->json("Retrait Effectuer avec success. Code de Transactin: ".$tr->getCodeTransaction(),Response::HTTP_OK);
     }
@@ -192,8 +199,16 @@ class TansactionController extends AbstractController
         }
         $this->getUser()->getAgence()->getCompte()->setSolde($this->getUser()->getAgence()->getCompte()->getSolde() + $tr->getMontant() + $tr->getTTC());
         $tr->setDateAnnulation(new DateTime());
+        $tr->getTypeTransactionAgences()[0]->setArchiver(true);
+        $typetr = new TypeTransactionAgence;
+        $typetr->setUser($this->getUser())
+                ->setTransaction($tr)
+                ->setType('Annuler')
+                ->setArchiver(true)
+                ;
+        $menager->persist($typetr);
         $menager->flush();
-        return new JsonResponse('Transaction Annuler', Response::HTTP_OK,[],'true');
+        return $this->json("Transaction Annuler",Response::HTTP_OK);
      }
 
 
