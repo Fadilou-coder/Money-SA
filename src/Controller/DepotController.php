@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Compte;
+use App\Entity\Agence;
 use App\Entity\Depot;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,7 +43,21 @@ class DepotController extends AbstractController
             $compte->setSolde($compte->getSolde() - $depot->getMontant());
             $menager->remove($depot);
             $menager->flush();
-            return new JsonResponse('Depot Annuler', Response::HTTP_OK,[],'true');
+            return $this->json('Depot Annuler', Response::HTTP_OK,[]);
         }
+    }
+
+    /**
+     * @Route(
+     *  name="getAgence",
+     *  path="/api/compte/{num}",
+     *  methods={"GET"},
+     * )
+     */
+
+    public function getdepot(EntityManagerInterface $menager, $num){
+        $compte = $menager->getRepository(Compte::class)->findOneBy(['numCompte' => $num]);
+        return $this->json($menager->getRepository(Agence::class)->findOneBy(['compte' => $compte]));
+
     }
 }

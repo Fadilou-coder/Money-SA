@@ -16,7 +16,11 @@ class JwtCreatedSubscriber
         // On enrichit le data du Token
         $data = $event->getData();
          $data['id'] = $user->getId();
-         $data['agence'] = $user->getAgence()->getId();
+         $data['blocage'] = $user->getBlocage();
+         if ($user->getAgence()) {
+            $data['agence']['id'] = $user->getAgence()->getId();
+            $data['agence']['blocage'] = $user->getAgence()->getBlocage();
+         }
 
         $event->setData($data);
     }

@@ -31,6 +31,7 @@ final class CompteDataPersister implements ContextAwareDataPersisterInterface
     public function remove($data, array $context = [])
     {
         $data->setBlocage(true);
+        $data->getAgence()->setBlocage(true);
         $this->menager->flush();
         return $data;
     }

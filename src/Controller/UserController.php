@@ -65,7 +65,7 @@ class UserController extends AbstractController
     /**
      * @Route(
      *  name="put_user",
-     *  path="/api/admin/users/{id}",
+     *  path="/api/users/{id}",
      *  methods={"PUT"},
      *  defaults={
      *      "_controller"="\app\Controller\User::putUser",

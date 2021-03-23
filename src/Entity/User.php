@@ -28,6 +28,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  *          "delete"={
  *              "route_name"="delUser",
  *          },
+ *          "put" = {"method"="PUT", "route_name"="put_user"}
  *      },
  *      subresourceOperations={
  *          "api_agences_users_get_subresource"={
@@ -59,31 +60,31 @@ class User implements UserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "user:read"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite", "tr:read", "user:read"})
+     * @Groups({"compte:whrite", "tr:read", "user:read", "depot:read"})
      */
     private $Prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite", "tr:read", "user:read"})
+     * @Groups({"compte:whrite", "tr:read", "user:read", "depot:read"})
      */
     private $Nom;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "user:read"})
      */
     private $phone;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "user:read"})
      */
     private $CNI;
 
@@ -95,7 +96,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:whrite", "user:read"})
      */
     private $Adresse;
 
@@ -143,6 +144,12 @@ class User implements UserInterface
      * @ApiSubresource()
      */
     private $typeTransactionAgences;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"user:read"})
+     */
+    private $totalMontantTr;
 
     
     public function __construct()
@@ -447,6 +454,18 @@ class User implements UserInterface
                 $typeTransactionAgence->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTotalMontantTr(): ?string
+    {
+        return $this->totalMontantTr;
+    }
+
+    public function setTotalMontantTr(?string $totalMontantTr): self
+    {
+        $this->totalMontantTr = $totalMontantTr;
 
         return $this;
     }

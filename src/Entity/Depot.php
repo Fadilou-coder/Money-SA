@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass=DepotRepository::class)
  * @ApiResource(
  *      denormalizationContext={"groups"={"depot:white"}},
+ *      normalizationContext={"groups"={"depot:read"}},
  *      collectionOperations={
  *          "get":{
  *              "access_control"="(is_granted('ROLE_ADMINSYS') or is_granted('ROLE_CAISSIER'))",
@@ -49,25 +50,26 @@ class Depot
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({"depot:read"})
      */
     private $dateDepot;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white", "compte:whrite"})
+     * @Groups({"depot:white", "compte:whrite", "depot:read"})
      * @Assert\Positive(message="Le Montant doit etre Positif")
      */
     private $montant;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="depots", cascade = "persist")
-     * @Groups({"depot:white", "compte:whrite"})
+     * @Groups({"depot:white", "compte:whrite", "depot:read"})
      */
     private $user;
 
     /**
      * @ORM\ManyToOne(targetEntity=Compte::class, inversedBy="depots", cascade = "persist")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white",  "depot:read"})
      */
     private $compte;
 

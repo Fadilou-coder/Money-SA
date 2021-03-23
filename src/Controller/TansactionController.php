@@ -175,6 +175,11 @@ class TansactionController extends AbstractController
         $tr->getClientRetrait()->setCNI($body['CNI']);
         $tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getCompte()->setSolde($tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
         // $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
+        $tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->setTotalComiss($tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getTotalComiss() +  $tr->getFraisEvoie());
+        $user->getAgence()->setTotalComiss($user->getAgence()->getTotalComiss() +  $tr->getFraisRetrait());
+        $user->getAgence()->setTotalMontantTr($user->getAgence()->getTotalMontantTr() +  $montant);
+        $user->setTotalMontantTr($user->getTotalMontantTr() + $montant);
+        $tr->getTypeTransactionAgences()[0]->getUser()->setTotalMontantTr($tr->getTypeTransactionAgences()[0]->getUser()->getTotalMontantTr() + $montant);
       $menager->persist($typetr);
       $menager->flush();
       return $this->json("Retrait Effectuer avec success. Code de Transactin: ".$tr->getCodeTransaction(),Response::HTTP_OK);

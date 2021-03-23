@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=CompteRepository::class)
@@ -19,8 +20,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *      },
  *      itemOperations={
  *          "get",
- *          "delete"
+ *          "delete",
  *      },
+ * )
+ * @UniqueEntity(
+ *      "NumCompte",
+ *      message="Ce numero de compte est deja utiliser dans cette apllication"
  * )
  */
 class Compte
@@ -29,32 +34,39 @@ class Compte
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"depot:white"})
+     * @Groups({"depot:white", "agence:read", "compte:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:read", "compte:whrite"})
+     * @Groups({"compte:read", "compte:whrite", "agence:read"})
      */
     private $numCompte;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"compte:read", "compte:whrite", "user:read"})
+     * @Groups({"compte:read", "compte:whrite", "user:read", "agence:read"})
      */
     private $solde;
 
     /**
      * @ORM\OneToMany(targetEntity=Depot::class, mappedBy="compte", cascade = "persist")
-     * @Groups({"compte:whrite"})
+     * @Groups({"compte:read", "compte:whrite"})
      */
     private $depots;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"compte:read"})
      */
     private $blocage = false;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Agence::class, cascade={"persist", "remove"})
+     * @Groups({"compte:read", "depot:read"})
+     */
+    private $agence;
 
     public function __construct()
     {
@@ -128,6 +140,18 @@ class Compte
     public function setBlocage(bool $blocage): self
     {
         $this->blocage = $blocage;
+
+        return $this;
+    }
+
+    public function getAgence(): ?Agence
+    {
+        return $this->agence;
+    }
+
+    public function setAgence(?Agence $agence): self
+    {
+        $this->agence = $agence;
 
         return $this;
     }
