@@ -66,13 +66,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite", "tr:read", "user:read", "depot:read"})
+     * @Groups({"compte:whrite", "user:read", "depot:read", "trans:read"})
      */
     private $Prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"compte:whrite", "tr:read", "user:read", "depot:read"})
+     * @Groups({"compte:whrite", "user:read", "depot:read", "trans:read"})
      */
     private $Nom;
 
@@ -120,30 +120,8 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="user", cascade = "persist")
-     * @Groups({"trans:read", "user:read"})
      */
     private $agence;
-
-    // /**
-    //  * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_depot")
-    //  * @Groups({"user:read"})
-    //  * @ApiSubresource()
-    //  */
-    // private $transactions;
-
-    // /**
-    //  * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_depot")
-    //  * @Groups({"user:read"})
-    //  * @ApiSubresource()
-    //  */
-    // private $transaction;
-
-    /**
-     * @ORM\OneToMany(targetEntity=TypeTransactionAgence::class, mappedBy="user")
-     * @Groups({"user:read"})
-     * @ApiSubresource()
-     */
-    private $typeTransactionAgences;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -151,12 +129,28 @@ class User implements UserInterface
      */
     private $totalMontantTr;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_retait")
+     * @Groups({"user:read"})
+     * @ApiSubresource()
+     */
+    private $retrait_trans;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="user_envoi")
+     * @Groups({"user:read"})
+     * @ApiSubresource()
+     */
+    private $envoi_trans;
+
     
     public function __construct()
     {
         $this->depots = new ArrayCollection();
         $this->typeTransactionAgences = new ArrayCollection();
         $this->transactions = new ArrayCollection();
+        $this->retrait_trans = new ArrayCollection();
+        $this->envoi_trans = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -368,96 +362,6 @@ class User implements UserInterface
         return $this;
     }
 
-    // /**
-    //   * @return Collection|Transaction[]
-    //  */
-    // public function getTransactions(): Collection
-    // {
-    //     return $this->transactions;
-    // }
-
-    // public function addTransaction(Transaction $transaction): self
-    // {
-    //     if (!$this->transactions->contains($transaction)) {
-    //         $this->transactions[] = $transaction;
-    //         $transaction->setUserDepot($this);
-    //     }
-
-    //     return $this;
-    // }
-
-    // public function removeTransaction(Transaction $transaction): self
-    // {
-    //     if ($this->transactions->removeElement($transaction)) {
-    //         // set the owning side to null (unless already changed)
-    //         if ($transaction->getUserDepot() === $this) {
-    //             $transaction->setUserDepot(null);
-    //         }
-    //     }
-
-    //     return $this;
-    // }
-
-    // /**
-    //  * @return Collection|Transaction[]
-    //  */
-    // public function getTransaction(): Collection
-    // {
-    //     return $this->transaction;
-    // }
-
-    // public function addTransactions(Transaction $transaction): self
-    // {
-    //     if (!$this->transaction->contains($transaction)) {
-    //         $this->transaction[] = $transaction;
-    //         $transaction->setUserRetrait($this);
-    //     }
-
-    //     return $this;
-    // }
-
-    // public function removeTransactions(Transaction $transaction): self
-    // {
-    //     if ($this->transaction->removeElement($transaction)) {
-    //         // set the owning side to null (unless already changed)
-    //         if ($transaction->getUserRetrait() === $this) {
-    //             $transaction->setUserRetrait(null);
-    //         }
-    //     }
-
-    //     return $this;
-    // }
-
-    /**
-     * @return Collection|TypeTransactionAgence[]
-     */
-    public function getTypeTransactionAgences(): Collection
-    {
-        return $this->typeTransactionAgences;
-    }
-
-    public function addTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
-    {
-        if (!$this->typeTransactionAgences->contains($typeTransactionAgence)) {
-            $this->typeTransactionAgences[] = $typeTransactionAgence;
-            $typeTransactionAgence->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
-    {
-        if ($this->typeTransactionAgences->removeElement($typeTransactionAgence)) {
-            // set the owning side to null (unless already changed)
-            if ($typeTransactionAgence->getUser() === $this) {
-                $typeTransactionAgence->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getTotalMontantTr(): ?string
     {
         return $this->totalMontantTr;
@@ -466,6 +370,66 @@ class User implements UserInterface
     public function setTotalMontantTr(?string $totalMontantTr): self
     {
         $this->totalMontantTr = $totalMontantTr;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getRetraitTrans(): Collection
+    {
+        return $this->retrait_trans;
+    }
+
+    public function addRetraitTran(Transaction $retraitTran): self
+    {
+        if (!$this->retrait_trans->contains($retraitTran)) {
+            $this->retrait_trans[] = $retraitTran;
+            $retraitTran->setUserRetait($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRetraitTran(Transaction $retraitTran): self
+    {
+        if ($this->retrait_trans->removeElement($retraitTran)) {
+            // set the owning side to null (unless already changed)
+            if ($retraitTran->getUserRetait() === $this) {
+                $retraitTran->setUserRetait(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getEnvoiTrans(): Collection
+    {
+        return $this->envoi_trans;
+    }
+
+    public function addEnvoiTran(Transaction $envoiTran): self
+    {
+        if (!$this->envoi_trans->contains($envoiTran)) {
+            $this->envoi_trans[] = $envoiTran;
+            $envoiTran->setUserEnvoi($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEnvoiTran(Transaction $envoiTran): self
+    {
+        if ($this->envoi_trans->removeElement($envoiTran)) {
+            // set the owning side to null (unless already changed)
+            if ($envoiTran->getUserEnvoi() === $this) {
+                $envoiTran->setUserEnvoi(null);
+            }
+        }
 
         return $this;
     }

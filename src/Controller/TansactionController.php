@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Client;
 use App\Entity\Transaction;
-use App\Entity\TypeTransactionAgence;
 use App\Entity\User;
 use App\Service\ValidatorService;
 use DateTime;
@@ -101,16 +100,8 @@ class TansactionController extends AbstractController
             $transaction->setFraisEvoie(floor($TTC*0.1));
             $transaction->setFraisSystem(floor($TTC*0.3));
             $transaction->setFraisRetrait(floor($TTC*0.2));
-            $typetr = new TypeTransactionAgence;
-            $typetr->setUser($this->getUser())
-                    ->setTransaction($transaction)
-                    ->setPart($transaction->getFraisEvoie())
-                    ->setType('Depot');
-                    ;
-            //$transaction->setUserDepot($this->getUser());
+            $transaction->setUserEnvoi($this->getUser());
             $transaction->setDateDepot(new DateTime());
-            //dd($menager->getRepository(Client::class)->findOneBy(['CNI' => $tr['clientEvoie']['CNI']]));
-            //dd($menager->getRepository(Client::class)->findOneBy(['nomComplet' => $tr['clientRetrait']['nomComplet'], 'phone' => $tr['clientRetrait']['phone']]));
             if ($compte->getSolde() < ($montant + $TTC)) {
                 return new JsonResponse('Solde Insufiisant', Response::HTTP_BAD_REQUEST,[],'true');
             }
@@ -134,8 +125,8 @@ class TansactionController extends AbstractController
                 $transaction->setClientRetrait($c);
             }
             $compte->setSolde(($compte->getSolde() - $montant - $TTC));
+            $tr->setAgenceEnvoi($this->getUser()->getAgence());
             $validate->validate($transaction);
-            $menager->persist($typetr);
             $menager->flush();
             return $this->json($transaction,Response::HTTP_OK);
     }
@@ -165,22 +156,17 @@ class TansactionController extends AbstractController
         }
         $compte->setSolde(($compte->getSolde() + $montant + $tr->getFraisRetrait()));
         $tr->setDateRetrait(new DateTime());
-        $typetr = new TypeTransactionAgence;
-        $typetr->setUser($user)
-                ->setTransaction($tr)
-                ->setPart($tr->getFraisRetrait())
-                ->setType('Retrait')
-                ;
-        // $tr->setUserRetrait($user);
+        $tr->setUserRetrait($user);
         $tr->getClientRetrait()->setCNI($body['CNI']);
-        $tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getCompte()->setSolde($tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
-        // $tr->getUserDepot()->getAgence()->getCompte()->setSolde($tr->getUserDepot()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
-        $tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->setTotalComiss($tr->getTypeTransactionAgences()[0]->getUser()->getAgence()->getTotalComiss() +  $tr->getFraisEvoie());
+        $tr->getUserEnvoi()->getAgence()->getCompte()->setSolde($tr->getUserEnvoi()->getAgence()->getCompte()->getSolde() + $tr->getFraisEvoie());
+        $tr->getUserEnvoi()->getAgence()->setTotalComiss($tr->getUserEnvoi()->getAgence()->getTotalComiss() +  $tr->getFraisEvoie());
         $user->getAgence()->setTotalComiss($user->getAgence()->getTotalComiss() +  $tr->getFraisRetrait());
         $user->getAgence()->setTotalMontantTr($user->getAgence()->getTotalMontantTr() +  $montant);
         $user->setTotalMontantTr($user->getTotalMontantTr() + $montant);
-        $tr->getTypeTransactionAgences()[0]->getUser()->setTotalMontantTr($tr->getTypeTransactionAgences()[0]->getUser()->getTotalMontantTr() + $montant);
-      $menager->persist($typetr);
+        $tr->getUserEnvoi()->setTotalMontantTr($tr->getUserEnvoi()->getTotalMontantTr() + $montant);
+        $tr->setAgenceRetrait($this->getUser()->getAgence());
+
+        
       $menager->flush();
       return $this->json("Retrait Effectuer avec success. Code de Transactin: ".$tr->getCodeTransaction(),Response::HTTP_OK);
     }
@@ -205,13 +191,6 @@ class TansactionController extends AbstractController
         $this->getUser()->getAgence()->getCompte()->setSolde($this->getUser()->getAgence()->getCompte()->getSolde() + $tr->getMontant() + $tr->getTTC());
         $tr->setDateAnnulation(new DateTime());
         $tr->getTypeTransactionAgences()[0]->setArchiver(true);
-        $typetr = new TypeTransactionAgence;
-        $typetr->setUser($this->getUser())
-                ->setTransaction($tr)
-                ->setType('Annuler')
-                ->setArchiver(true)
-                ;
-        $menager->persist($typetr);
         $menager->flush();
         return $this->json("Transaction Annuler",Response::HTTP_OK);
      }

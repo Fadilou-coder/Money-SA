@@ -119,18 +119,6 @@ class Transaction
      */
     private $codeTransaction;
 
-    // /**
-    //  * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transaction")
-    //  * @Groups({"trans:read", "trans:whrite"})
-    //  */
-    // private $user_depot;
-
-    // /**
-    //  * @ORM\ManyToOne(targetEntity=User::class, inversedBy="transactions")
-    //  * @Groups({"trans:read"})
-    //  */
-    // private $user_retrait;
-
     /**
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="transactions", cascade = "persist")
      * @Groups({"trans:read"})
@@ -144,10 +132,28 @@ class Transaction
     private $client_envoie;
 
     /**
-     * @ORM\OneToMany(targetEntity=TypeTransactionAgence::class, mappedBy="transaction", cascade = "persist")
-     * @Groups({"trans:read", "trans:whrite"})
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="retrait_trans")
+     * @Groups({"trans:read"})
      */
-    private $typeTransactionAgences;
+    private $user_retait;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="envoi_trans")
+     * @Groups({"trans:read"})
+     */
+    private $user_envoi;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="transaction_retrait")
+     * @Groups({"trans:read", "user:read"})
+     */
+    private $agence_retrait;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Agence::class, inversedBy="transaction_evoi")
+     * @Groups({"trans:read", "user:read"})
+     */
+    private $agence_envoi;
 
     public function __construct()
     {
@@ -280,30 +286,6 @@ class Transaction
         return $this;
     }
 
-    // public function getUserDepot(): ?User
-    // {
-    //     return $this->user_depot;
-    // }
-
-    // public function setUserDepot(?User $user_depot): self
-    // {
-    //     $this->user_depot = $user_depot;
-
-    //     return $this;
-    // }
-
-    // public function getUserRetrait(): ?User
-    // {
-    //     return $this->user_retrait;
-    // }
-
-    // public function setUserRetrait(?User $user_retrait): self
-    // {
-    //     $this->user_retrait = $user_retrait;
-
-    //     return $this;
-    // }
-
     public function getClientRetrait(): ?Client
     {
         return $this->client_retrait;
@@ -328,32 +310,50 @@ class Transaction
         return $this;
     }
 
-    /**
-     * @return Collection|TypeTransactionAgence[]
-     */
-    public function getTypeTransactionAgences(): Collection
+    public function getUserRetait(): ?User
     {
-        return $this->typeTransactionAgences;
+        return $this->user_retait;
     }
 
-    public function addTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
+    public function setUserRetait(?User $user_retait): self
     {
-        if (!$this->typeTransactionAgences->contains($typeTransactionAgence)) {
-            $this->typeTransactionAgences[] = $typeTransactionAgence;
-            $typeTransactionAgence->setTransaction($this);
-        }
+        $this->user_retait = $user_retait;
 
         return $this;
     }
 
-    public function removeTypeTransactionAgence(TypeTransactionAgence $typeTransactionAgence): self
+    public function getUserEnvoi(): ?User
     {
-        if ($this->typeTransactionAgences->removeElement($typeTransactionAgence)) {
-            // set the owning side to null (unless already changed)
-            if ($typeTransactionAgence->getTransaction() === $this) {
-                $typeTransactionAgence->setTransaction(null);
-            }
-        }
+        return $this->user_envoi;
+    }
+
+    public function setUserEnvoi(?User $user_envoi): self
+    {
+        $this->user_envoi = $user_envoi;
+
+        return $this;
+    }
+
+    public function getAgenceRetrait(): ?Agence
+    {
+        return $this->agence_retrait;
+    }
+
+    public function setAgenceRetrait(?Agence $agence_retrait): self
+    {
+        $this->agence_retrait = $agence_retrait;
+
+        return $this;
+    }
+
+    public function getAgenceEnvoi(): ?Agence
+    {
+        return $this->agence_envoi;
+    }
+
+    public function setAgenceEnvoi(?Agence $agence_envoi): self
+    {
+        $this->agence_envoi = $agence_envoi;
 
         return $this;
     }

@@ -40,13 +40,13 @@ class Agence
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"trans:read", "user:read", "agence:read"})
+     * @Groups({"trans:read", "agence:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"trans:read", "compte:whrite", "agence:read", "depot:read", "user:read"})
+     * @Groups({"trans:read", "compte:whrite", "agence:read", "depot:read"})
      */
     private $nom;
 
@@ -65,7 +65,7 @@ class Agence
 
     /**
      * @ORM\OneToOne(targetEntity=Compte::class, cascade={"persist", "remove"})
-     * @Groups({"compte:whrite", "user:read", "agence:read"})
+     * @Groups({"compte:whrite", "agence:read"})
      */
     private $compte;
 
@@ -77,19 +77,33 @@ class Agence
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"user:read"})
+     * @Groups({"user:read", "trans:read"})
      */
     private $totalComiss;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"user:read"})
+     * @Groups({"user:read", "trans:read"})
      */
     private $totalMontantTr;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="agence_retrait")
+     * @ApiSubresource()
+     */
+    private $transaction_retrait;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="agence_envoi")
+     * @ApiSubresource()
+     */
+    private $transaction_evoi;
 
     public function __construct()
     {
         $this->user = new ArrayCollection();
+        $this->transaction_retrait = new ArrayCollection();
+        $this->transaction_evoi = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -195,6 +209,67 @@ class Agence
     public function setTotalMontantTr(?string $totalMontantTr): self
     {
         $this->totalMontantTr = $totalMontantTr;
+
+        return $this;
+    }
+
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransactionRetrait(): Collection
+    {
+        return $this->transaction_retrait;
+    }
+
+    public function addTransactionRetrait(Transaction $transactionRetrait): self
+    {
+        if (!$this->transaction_retrait->contains($transactionRetrait)) {
+            $this->transaction_retrait[] = $transactionRetrait;
+            $transactionRetrait->setAgenceRetrait($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransactionRetrait(Transaction $transactionRetrait): self
+    {
+        if ($this->transaction_retrait->removeElement($transactionRetrait)) {
+            // set the owning side to null (unless already changed)
+            if ($transactionRetrait->getAgenceRetrait() === $this) {
+                $transactionRetrait->setAgenceRetrait(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransactionEvoi(): Collection
+    {
+        return $this->transaction_evoi;
+    }
+
+    public function addTransactionEvoi(Transaction $transactionEvoi): self
+    {
+        if (!$this->transaction_evoi->contains($transactionEvoi)) {
+            $this->transaction_evoi[] = $transactionEvoi;
+            $transactionEvoi->setAgenceEnvoi($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransactionEvoi(Transaction $transactionEvoi): self
+    {
+        if ($this->transaction_evoi->removeElement($transactionEvoi)) {
+            // set the owning side to null (unless already changed)
+            if ($transactionEvoi->getAgenceEnvoi() === $this) {
+                $transactionEvoi->setAgenceEnvoi(null);
+            }
+        }
 
         return $this;
     }
